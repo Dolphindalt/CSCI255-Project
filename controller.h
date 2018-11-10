@@ -35,7 +35,7 @@ typedef unsigned int word_t; // 16 bits
 typedef struct __attribute__((__packed__)) controller_data {
     word_t buttons; // use the gcc bitmasks defined above to check button state
     byte_t joy1X; // the joy1 that is not yellow
-    byte_t Joy1Y;
+    byte_t joy1Y;
     byte_t joy2X; // joy2 is the yellow one
     byte_t joy2Y;
     byte_t left; // left button
