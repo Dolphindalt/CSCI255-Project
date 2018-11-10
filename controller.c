@@ -12,7 +12,7 @@ typedef enum mode { WAITING, SENDING, RECIEVING } mode_t;
 typedef struct handler
 {
     mode_t current_status;
-    unsigned int gc;
+    signed int gc;
 } handler_t;
 
 handler_t gbch;
@@ -28,22 +28,6 @@ void controller_init()
     P1OUT |= 0x01;
 }
 
-// GBC expects 1 us low and 3 us high for a high edge
-static void send_high()
-{
-    P1OUT &=~(0x01);
-    P1OUT |= 0x01;
-    __delay_cycles(3);
-}
-
-// GBC expects 3 us low and 1 us high for a low edge
-static void send_low()
-{
-        P1OUT &=~(0x01);
-        __delay_cycles(3);
-        P1OUT |= 0x01;
-}
-
 /**
  * The micro controller must poll the gamecube controller after every
  * six micro seconds to determine the controller's state.
@@ -54,27 +38,50 @@ __interrupt void PollingTimer()
     switch(gbch.current_status)
     {
     case WAITING:
-        gbch.gc++;
-        if(gbch.gc == 6)
+        if(gbch.gc++ == 1)
+        {
             gbch.current_status = SENDING;
+            CCR0 = 1;
+        }
         break;
     case SENDING:
         gbch.gc = 23;
         P1DIR |= 0x01;
         while(gbch.gc >= 0)
             if((POLL_COMMAND >> gbch.gc--) & 0x01)
-                send_high();
+            { // GBC expects 1 us low and 3 us high for a high edge
+                P1OUT &=~(0x01);
+                P1OUT |= 0x01;
+                __delay_cycles(3);
+            }
             else
-                send_low();
+            { // GBC expects 3 us low and 1 us high for a low edge
+                P1OUT &=~(0x01);
+                __delay_cycles(3);
+                P1OUT |= 0x01;
+            }
         P1OUT |= 0x01; // stop bit
         gbch.current_status = RECIEVING;
         break;
     case RECIEVING:
         gbch.gc = 63;
         P1DIR &=~(0x01);
+        while(gbch.gc >= 47)
+            controller_data.buttons |= ((P1IN >> gbch.gc--) & 0x01);
+        while(gbch.gc >= 39)
+            controller_data.joy1X |= ((P1IN >> gbch.gc--) & 0x01);
+        while(gbch.gc >= 31)
+            controller_data.joy1Y |= ((P1IN >> gbch.gc--) & 0x01);
+        while(gbch.gc >= 23)
+            controller_data.joy2X |= ((P1IN >> gbch.gc--) & 0x01);
+        while(gbch.gc >= 15)
+            controller_data.joy2Y |= ((P1IN >> gbch.gc--) & 0x01);
+        while(gbch.gc >= 7)
+            controller_data.right |= ((P1IN >> gbch.gc--) & 0x01);
         while(gbch.gc >= 0)
-            controller_data[gbch--] |= (P1IN & 0x01);
+            controller_data.left |= ((P1IN >> gbch.gc--) & 0x01);
         gbch.gc = 0;
+        CCR0 = 6;
         gbch.current_status = WAITING;
         break;
     default:
