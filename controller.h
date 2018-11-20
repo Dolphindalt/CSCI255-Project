@@ -17,7 +17,7 @@
 typedef unsigned int word_t;
 typedef unsigned char byte_t;
 
-typedef struct __attribute__((__packed__)) controller_data {
+typedef struct controller_data {
     word_t buttons; // use the bitmasks defined above to check button state
     byte_t joy1X; // the joy1 that is not yellow
     byte_t joy1Y;
@@ -27,6 +27,10 @@ typedef struct __attribute__((__packed__)) controller_data {
     byte_t right; // right button
 } controller_data_t;
 
+controller_data_t gbc;
+
 void controller_init();
+
+void test();
 
 #endif

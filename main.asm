@@ -1,6 +1,8 @@
 ; File: main.asm
-; Author: Dalton Caron
-; Description: Hi
+; Author: Dalton Caron, Kaleb Bausch, Jackson Jenkins
+; Code: SUPA DUPA ROVA'LDESTROYA BOT
+; Description: This little dude will blast music and destroy
+; eletronics like no one has ever seen before.
 
             .cdecls C,LIST,"msp430.h"       ; Include device header file
             .cdecls C,LIST,"controller.h"
@@ -42,8 +44,8 @@ StopWDT     mov.w   #WDTPW|WDTHOLD,&WDTCTL  ; Stop watchdog timer
 MAIN
 
 			mov.w	#CALBC1_1MHZ,&BCSCTL1	; 16 MHZ
-			mov.w	#CALDCO_1MHZ,&DCOCTL
-
+			mov.w	#CALDCO_1MHZ,&DCOCTL	; what the fuck
+											; this cost me hours
 			call 	#controller_init
 
 			;mov.w	#0x13,&P1DIR			; view these on scope
@@ -51,9 +53,10 @@ MAIN
 
 			bis.w	#GIE,SR					; enable interrupts
 
-forever		jmp 	forever
+forever		call 	#test
+			jmp 	forever
 
-gbc_rw
+gbc_rw		; abandon all hope, ye who dare enter here
 			push.w	r10						; 3 cycles
 			push.w	r11						; 3 cycles
 			push.w	r7
@@ -135,10 +138,12 @@ exit										; 			need to send stop bit
 
 			bis.b	#01h,&P1OUT				; 4 cycle	p1.0 high
 
+			nop6
+
 			mov.b	#08h,r11				; bit counter
 			mov.b	#00h,r10				; bytes got
 											; r9 timeout counter is 0 still
-			bic.b	#0x01,&P1OUT			; p1.0 to input
+			bic.b	#01h,&P1DIR				; p1.0 to input
 wait_low_extra
 			xor.b	r9,r9
 wait_low_extra_loop_1
@@ -158,7 +163,6 @@ wait_low_extra_loop_2
 			dec.b	r9						; remember r9 is a timeout counter
 			jnz		wait_low_extra_loop_2	; why so long, loop if counter not zero
 
-			; abandon all hope, ye who dare enter here
 wait_for_low
 			mov.b	#80h,r9					; 128 chances to get this right
 wait_for_low_loop
@@ -173,11 +177,12 @@ wait_for_low_loop
 			jnz		wait_low_extra			; if not zero, wait extra
 			jmp 	end						; we timed out
 wait_for_measure
-			mov.b	#(23/3),r8				; r8 is mutli purposed now
-nop_loop1
-			dec.b	r8						; stupid nop loop
-			jnz		nop_loop1
-			nop1
+			nop6							; delay 23 cycles
+			nop6
+			nop6
+			nop2
+			nop3
+
 			mov.b	#01h,r7					; timeout disabled
 
 			rla.b	r6						; shift left current byte in out buffer
@@ -189,8 +194,9 @@ check_bit_count
 			dec.b	r11						; dec bit counter register
 			jnz		wait_for_high			; check if we got a whole byte
 											; else we got a whole byte
-			mov.b	r6,r14					; save read data and increment mem ptr
-			inc.b	r14
+			; actually moving the read bit into the buffer here
+			mov.b	r6,0(r14)				; save read data and increment mem ptr
+			inc.w	r14
 			inc.b	r5						; return type inc
 			mov.b	#08h,r11				; bit counter back to 8
 			cmp.b	r15,r5					; compare bytes read vs sizeof buffer
@@ -208,7 +214,7 @@ wait_for_high_loop
 											; we timed out
 end
 			mov.b	r5,r12					; move bytes read to r12 so it will return
-			bis.b	#01h,&P1OUT				; p1.0 to output
+			bis.b	#01h,&P1DIR				; p1.0 to output
 			pop.w	r5						; too many god damn registers
 			pop.w	r6
 			pop.w	r9
@@ -218,127 +224,8 @@ end
 			pop.w	r10						; 3 cycles
 			ret								; 5 cycles
 
-edge_test
-			bic.b	#01h,&P1OUT		; high
-			nop1					; delay 1
-			bis.b	#01h,&P1OUT
-			nop6					; delay 6
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			ret
-
-brute_force
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; high
-			nop1					; delay 1
-			bis.b	#01h,&P1OUT
-			nop6					; delay 6
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; high
-			nop1					; delay 1
-			bis.b	#01h,&P1OUT
-			nop6					; delay 6
-			bic.b	#01h,&P1OUT		; high
-			nop1					; delay 1
-			bis.b	#01h,&P1OUT
-			nop6					; delay 6
-
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; low
-			nop6					; delay 6
-			bis.b	#01h,&P1OUT
-			nop1					; delay 1
-			bic.b	#01h,&P1OUT		; high
-			nop1					; delay 1
-			bis.b	#01h,&P1OUT
-			nop6					; delay 6
-			bic.b	#01h,&P1OUT		; high
-			nop1					; delay 1
-			bis.b	#01h,&P1OUT
-			nop6					; delay 6
-
-			bic.b	#01h,&P1OUT
-
-			ret
 ; Extern stuff
 			.global gbc_rw
-			.global edge_test
-			.global brute_force
 ; Stack Pointer definition
             .global __STACK_END
             .sect   .stack
