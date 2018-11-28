@@ -138,7 +138,7 @@ exit										; 			need to send stop bit
 
 			bis.b	#01h,&P1OUT				; 4 cycle	p1.0 high
 
-			nop6
+			;nop6
 
 			mov.b	#08h,r11				; bit counter
 			mov.b	#00h,r10				; bytes got
