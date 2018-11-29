@@ -45,15 +45,12 @@ MAIN
 
 			mov.w	#CALBC1_1MHZ,&BCSCTL1	; 16 MHZ
 			mov.w	#CALDCO_1MHZ,&DCOCTL	; what the fuck
-											; this cost me hours
+											; this cost me days
 			call 	#controller_init
-
-			;mov.w	#0x13,&P1DIR			; view these on scope
-			;mov.w	#0x11,&P1SEL
 
 			bis.w	#GIE,SR					; enable interrupts
 
-forever		call 	#test
+forever
 			jmp 	forever
 
 gbc_rw		; abandon all hope, ye who dare enter here
@@ -64,6 +61,7 @@ gbc_rw		; abandon all hope, ye who dare enter here
 			push.w	r9
 			push.w  r6
 			push.w	r5
+			bic.w	#GIE,SR					; disable interrupts
 			; out buffer size in bytes r15
 			; out buffer pointer r14
 			; in buffer size in bytes r13
@@ -138,7 +136,7 @@ exit										; 			need to send stop bit
 
 			bis.b	#01h,&P1OUT				; 4 cycle	p1.0 high
 
-			;nop6
+			nop6
 
 			mov.b	#08h,r11				; bit counter
 			mov.b	#00h,r10				; bytes got
@@ -147,7 +145,7 @@ exit										; 			need to send stop bit
 wait_low_extra
 			xor.b	r9,r9
 wait_low_extra_loop_1
-			mov.b	P1OUT,r8				; read pin
+			mov.b	#P1IN,r8				; read pin
 			and.b	#01h,r8					; compare with mask
 			jz		wait_for_measure		; measure if low
 											; or we are high still
@@ -156,7 +154,7 @@ wait_low_extra_loop_1
 											; 2us extra loop
 			xor.b	r9,r9					; timeout to zero
 wait_low_extra_loop_2
-			mov.b	P1OUT,r8				; read pin
+			mov.b	P1IN,r8					; read pin
 			and.b	#01h,r8					; compare with mask
 			jz		wait_for_measure		; measure if low
 											; or we are high still
@@ -166,8 +164,8 @@ wait_low_extra_loop_2
 wait_for_low
 			mov.b	#80h,r9					; 128 chances to get this right
 wait_for_low_loop
-			mov.b	P1OUT,r8				; read pin
-			and.b	#01h,r9					; mask pin
+			mov.b	P1IN,r8					; read pin
+			and.b	#01h,r8					; mask pin
 			jz		wait_for_measure		; measure if low
 											; or we are still high
 			dec.b	r9						; decrement timeout counter
@@ -186,7 +184,7 @@ wait_for_measure
 			mov.b	#01h,r7					; timeout disabled
 
 			rla.b	r6						; shift left current byte in out buffer
-			mov.b 	P1OUT,r8				; read pin
+			mov.b 	P1IN,r8					; read pin
 			and.b	#01h,r8					; bitmask pin
 			jz		check_bit_count			; skip set if low
 			bis.b	#01h,r6					; set buffer high if pin high
@@ -205,7 +203,7 @@ check_bit_count
 wait_for_high
 			mov.b	#80h,r9					; 128 chances to get this right
 wait_for_high_loop
-			mov.b	P1OUT,r8				; read pin
+			mov.b	P1IN,r8					; read pin
 			and.b	#01h,r8					; mask value
 			jnz		wait_for_low			; with line high, next
 											; or still low?
@@ -222,8 +220,9 @@ end
 			pop.w	r7
 			pop.w	r11						; 3 cycles
 			pop.w	r10						; 3 cycles
+			bis.w	#GIE,SR					; enable interrupts
 			ret								; 5 cycles
-
+; Holy shit, it is finally over
 ; Extern stuff
 			.global gbc_rw
 ; Stack Pointer definition

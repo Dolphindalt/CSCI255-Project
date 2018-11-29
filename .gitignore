@@ -6,3 +6,4 @@ targetConfigs/
 .launches/
 .settings/
 *.cmd
+.project
