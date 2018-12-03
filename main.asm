@@ -6,6 +6,7 @@
 
             .cdecls C,LIST,"msp430.h"       ; Include device header file
             .cdecls C,LIST,"controller.h"
+            .cdecls C,LIST,"music.h"
 
 nop1		.macro							; built NOPs using 3.4.6.33 of manual
 			bic		#0,r5
@@ -43,10 +44,11 @@ StopWDT     mov.w   #WDTPW|WDTHOLD,&WDTCTL  ; Stop watchdog timer
 ; Main loop here obviously
 MAIN
 
-			mov.w	#CALBC1_1MHZ,&BCSCTL1	; 16 MHZ
+			mov.w	#CALBC1_1MHZ,&BCSCTL1	; 16 MHz
 			mov.w	#CALDCO_1MHZ,&DCOCTL	; what the fuck
 											; this cost me days
 			call 	#controller_init
+			call 	#music_init
 
 			bis.w	#GIE,SR					; enable interrupts
 

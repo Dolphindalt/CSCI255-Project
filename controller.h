@@ -41,7 +41,7 @@
  * Byte 6   Left Button
  * Byte 7   Right Button
  *
- * The controller is very fast, so we had to overclock to 16mHZ. A low bit is represented
+ * The controller is very fast, so we had to overclock to 16MHz. A low bit is represented
  * by 3us low followed by 1us high. A high bit is represented as 1us low followed by 3us
  * high. There may be a delay between the command sending and controller responding, so
  * we took precautions in case a delay were to occur in this program.
@@ -56,7 +56,7 @@
  * BEG CODE * * * * * * * * * * * * * * * * * * * * * * *
  * #include "controller.h"
  * ...
- * unsigned char result = gbc.buttons & GBC_A;
+ * unsigned int result = gbc.buttons & GBC_A;
  * END CODE * * * * * * * * * * * * * * * * * * * * * * *
  *
  * The example code snippet above bit masks the GBC_A macro with the buttons variable
