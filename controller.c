@@ -7,8 +7,6 @@
 
 #define GBC_BYTE_BUFFER_SIZE 0x08
 
-extern byte_t gbc_rw(const byte_t *tx, byte_t len_tx, byte_t *rx, byte_t len_rx);
-
 void controller_init()
 {
     CCTL0 = CCIE;                   // CCR0 interrupt enabled

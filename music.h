@@ -11,4 +11,10 @@ void music_init();
 // plays the imperial march from starwars
 void playImperialMarch();
 
+// plays sans from undertale
+void playMeglovania();
+
+// a fun little noise
+void playDubstepFart();
+
 #endif

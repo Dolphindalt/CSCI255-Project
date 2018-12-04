@@ -129,4 +129,7 @@ controller_data_t gbc;
 // simply initializes pins for the controller DATA line and interrupts for polling
 void controller_init();
 
+byte_t gbc_rw(const byte_t *tx, byte_t len_tx, byte_t *rx, byte_t len_rx);
+
+
 #endif

@@ -7,6 +7,7 @@
             .cdecls C,LIST,"msp430.h"       ; Include device header file
             .cdecls C,LIST,"controller.h"
             .cdecls C,LIST,"music.h"
+            .cdecls C,LIST,"logic.h"
 
 nop1		.macro							; built NOPs using 3.4.6.33 of manual
 			bic		#0,r5
@@ -52,7 +53,7 @@ MAIN
 
 			bis.w	#GIE,SR					; enable interrupts
 
-forever
+forever		call	#logic_loop
 			jmp 	forever
 
 gbc_rw		; abandon all hope, ye who dare enter here
