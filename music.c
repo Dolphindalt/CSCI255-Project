@@ -53,9 +53,21 @@
 #define DOTTED_EIGHT (EIGHT + SIXTEENTH)
 #define QUARTER (EIGHT * 2)
 
+#define MUSIC_PIN 0x02
+
 void music_init()
 {
-    P2DIR |= BIT2; // DATA line outputs from p1.2
+    P1DIR |= MUSIC_PIN; // DATA line outputs from p1.0
+}
+
+static void start()
+{
+    P2DIR &=~(0x02 | 0x04);
+}
+
+static void stop()
+{
+    P2DIR |= (0x02 | 0x04);
 }
 
 void delay_ms(unsigned int ms)
@@ -80,9 +92,9 @@ void beep(unsigned int note, unsigned int duration)
     long time = (long)(((long)(duration)*100L*16L)/(delay*2));  //This is how much time we need to spend on the note.
     for (i=0;i<time;i++)
     {
-        P2OUT |= BIT2;     //Set P1.2...
+        P1OUT |= MUSIC_PIN;     //Set P1.2...
         delay_us(delay);   //...for a semiperiod...
-        P2OUT &= ~BIT2;    //...then reset it...
+        P1OUT &= ~MUSIC_PIN;    //...then reset it...
         delay_us(delay);   //...for the other semiperiod.
     }
     delay_ms(20); //Add a little delay to separate the single notes
@@ -93,6 +105,7 @@ void beep(unsigned int note, unsigned int duration)
 void playImperialMarch()
 {
 	_BIC_SR(GIE);
+	start();
 
     beep(a, 500);
     beep(a, 500);
@@ -185,12 +198,14 @@ void playImperialMarch()
     beep(cH, 125);
     beep(a, 650);
     //end of the song
+    stop();
     _BIS_SR(GIE);
 }
 
 void playMeglovania()
 {
 	_BIC_SR(GIE);
+	start();
 	// https://pianoletternotes.blogspot.com/2017/10/megalovania-undertale-theme.html
 	// 1
 	beep(d4,SIXTEENTH);
@@ -408,16 +423,22 @@ void playMeglovania()
 	beep(d5, SIXTEENTH);
 	beep(c5, QUARTER*4);
 
+	stop();
 	_BIS_SR(GIE);
 }
 
 void playDubstepFart()
 {
 	_BIC_SR(GIE);
+	start();
 	beep(16, QUARTER);
 	beep(32, QUARTER);
 	beep(23, QUARTER);
 	beep(40, QUARTER);
+	beep(23, EIGHT);
+	beep(16, EIGHT);
+	beep(50, QUARTER);
+	stop();
 	_BIS_SR(GIE);
 }
 

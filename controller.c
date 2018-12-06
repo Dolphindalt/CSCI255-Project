@@ -9,11 +9,13 @@
 
 void controller_init()
 {
-    CCTL0 = CCIE;                   // CCR0 interrupt enabled
+    TA0CCTL0 = CCIE;                // CCR0 interrupt enabled
     TA0CTL = TASSEL_1 + MC_1;       // 1 mHz cpu and counting up to CCR0
-    CCR0 = 96;                      // 16 mHz/s = 16 cycle/us
+    TA0CCR0 = 96;                   // 16 mHz/s = 16 cycle/us
     P1DIR |= 0x01;
     P1OUT |= 0x01;
+
+    gbc.buttons = 0;
 }
 
 #pragma vector=TIMER0_A0_VECTOR

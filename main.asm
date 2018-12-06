@@ -8,6 +8,7 @@
             .cdecls C,LIST,"controller.h"
             .cdecls C,LIST,"music.h"
             .cdecls C,LIST,"logic.h"
+            .cdecls C,LIST,"motor.h"
 
 nop1		.macro							; built NOPs using 3.4.6.33 of manual
 			bic		#0,r5
@@ -50,6 +51,7 @@ MAIN
 											; this cost me days
 			call 	#controller_init
 			call 	#music_init
+			call	#motor_init
 
 			bis.w	#GIE,SR					; enable interrupts
 
@@ -140,6 +142,7 @@ exit										; 			need to send stop bit
 			bis.b	#01h,&P1OUT				; 4 cycle	p1.0 high
 
 			nop6
+			nop2
 
 			mov.b	#08h,r11				; bit counter
 			mov.b	#00h,r10				; bytes got
@@ -235,7 +238,7 @@ end
 ; Interrupt Vectors
             .sect   ".reset"                ; MSP430 RESET Vector
             .short  RESET
-            
+
             ; PORT1_VECTOR            ".int02"        			  /* 0xFFE4 Port 1 */
             ; PORT2_VECTOR            ".int03"                    /* 0xFFE6 Port 2 */
             ; ADC10_VECTOR            ".int05"                    /* 0xFFEA ADC10 */
