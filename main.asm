@@ -46,9 +46,10 @@ StopWDT     mov.w   #WDTPW|WDTHOLD,&WDTCTL  ; Stop watchdog timer
 ; Main loop here obviously
 MAIN
 
-			mov.w	#CALBC1_1MHZ,&BCSCTL1	; 16 MHz
-			mov.w	#CALDCO_1MHZ,&DCOCTL	; what the fuck
-											; this cost me days
+			mov.w	#CALBC1_1MHZ,&BCSCTL1
+			mov.w	#CALDCO_1MHZ,&DCOCTL	; So running the micro controller at 
+											; 1 MHz runs it at 16 MHz.
+
 			call 	#controller_init
 			call 	#music_init
 			call	#motor_init
